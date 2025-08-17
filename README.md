@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎯 PlacementPrep  
 
-## Getting Started
+PlacementPrep is a **comprehensive web application** designed to help students and job seekers prepare for campus and off-campus recruitment.  
+It provides a **one-stop platform** for aptitude tests, coding practice, group discussions, and AI-driven interview simulations — all in a clean, modern UI.  
 
-First, run the development server:
+---
 
+## ✨ Features  
+
+- 📝 **Aptitude Tests**  
+  - Take MCQ-based aptitude tests with scoring and time limits.  
+  - Choose from preset questions or AI-generated ones.  
+  - Track progress across different topics.  
+
+- 💻 **Coding Practice**  
+  - Weekly coding challenges synced with **LeetCode-style problems**.  
+  - Submit solutions and view performance history.  
+  - Automated evaluation with score tracking.  
+
+- 🗣️ **Group Discussions (GD)**  
+  - Get **AI-generated topics** for group discussions.  
+  - Option for random or domain-specific topics.  
+  - Helps improve communication and logical reasoning.    
+
+- 📊 **User Dashboard**  
+  - Track aptitude scores, coding progress, and GD participation.  
+  - Personalized analytics and improvement insights.  
+
+- 🔐 **Authentication**  
+  - Secure login & user management with Firebase Authentication.  
+
+---
+
+## 🏗️ Tech Stack  
+
+- **Frontend**: Next.js (React) + Tailwind CSS  
+- **Backend**: Node.js (Express)  
+- **Database**: Firebase Firestore  
+- **Authentication**: Firebase Auth  
+- **Hosting**: Vercel / Firebase Hosting (TBD)  
+
+---
+
+## 🚀 Getting Started  
+
+### 1️⃣ Clone the Repository  
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+git clone https://github.com/Adhilz/placementprep.git
+cd placementprep
