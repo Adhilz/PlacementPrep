@@ -167,9 +167,9 @@ export function AptitudeTest({ onBack }: AptitudeTestProps) {
     const categoryScores: { [key: string]: { correct: number; total: number } } = {}
 
     sampleQuestions.forEach((question) => {
-      const category = question.category
+      let category = question.category
       if (!categoryScores[category]) {
-        categoryScores[category = { correct: 0, total: 0 }
+        
       }
       categoryScores[category].total++
 
