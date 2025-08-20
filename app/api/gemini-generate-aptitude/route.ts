@@ -4,7 +4,37 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   // Your existing API logic goes here
   const prompt = `{
-   "Generate an array of 10 aptitude questions in JSON format. The questions should be specifically designed for software developers and focus on advanced topics. The categories should include 'DSA', 'Technical Aptitude', and 'Problem Solving'. The questions should have a mix of easy, medium, and hard difficulty levels.For any question involving code, ensure the code is properly formatted and indented to be easily readable also when code is given ensure it starts from next line after question. For each question, include the following fields: question (string), options (array of strings with exactly 4 options), correctAnswer (number, 0-based index), category (string), and difficulty (string)."
+   "Generate an array of exactly 10 advanced aptitude questions in JSON format. 
+The questions should be highly challenging, designed for final-year students preparing for software developer job interviews. 
+Focus only on complex aptitude topics such as puzzles, logical reasoning, quantitative aptitude, probability, permutations & combinations, time & work, and critical problem-solving. 
+Avoid coding, DSA, or technical questions — keep them purely aptitude.
+
+Rules for generation:
+- All 10 questions must be of medium or hard difficulty (no easy ones).
+- Each JSON object should have:
+  - question (string)
+  - options (array of exactly 4 strings)
+  - correctAnswer (number, 0-based index)
+  - difficulty (string: "medium" or "hard")
+
+Output format:
+{
+  "questions": [
+    {
+      "question": "...",
+      "options": ["...", "...", "...", "..."],
+      "correctAnswer": 0,
+      "difficulty": "hard"
+    },
+    ...
+  ]
+}
+
+Important:
+- Do NOT include explanations or solutions in the output.
+- Return only valid JSON that can be parsed directly.
+- Ensure questions are non-trivial, require logical/quantitative reasoning, and are at the level of competitive placement exams."
+
 }`;
 
   const payload = {
