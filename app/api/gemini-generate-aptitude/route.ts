@@ -3,12 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   // Your existing API logic goes here
-  const prompt = `Generate an array of 10 aptitude test questions in JSON format. The questions should cover Logical Reasoning, Quantitative, and Verbal categories. The difficulties should be a mix of easy, medium, and hard. For each question, include the following fields:
-- question (string): The question text.
-- options (array of strings): Exactly 4 answer options.
-- correctAnswer (number): The 0-based index of the correct answer within the options array.
-- category (string): The category of the question (e.g., "Logical Reasoning", "Quantitative", or "Verbal").
-- difficulty (string): The difficulty of the question ("easy", "medium", or "hard").`;
+  const prompt = `{
+   "Generate an array of 10 aptitude questions in JSON format. The questions should be specifically designed for software developers and focus on advanced topics. The categories should include 'DSA', 'Technical Aptitude', and 'Problem Solving'. The questions should have a mix of easy, medium, and hard difficulty levels.For any question involving code, ensure the code is properly formatted and indented to be easily readable also when code is given ensure it starts from next line after question. For each question, include the following fields: question (string), options (array of strings with exactly 4 options), correctAnswer (number, 0-based index), category (string), and difficulty (string)."
+}`;
 
   const payload = {
     contents: [{ role: "user", parts: [{ text: prompt }] }],

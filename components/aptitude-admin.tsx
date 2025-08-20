@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { collection, addDoc, getDocs, deleteDoc } from "firebase/firestore"
+import { collection, addDoc, getDocs, deleteDoc, setDoc, doc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
@@ -70,17 +70,34 @@ export function AptitudeAdmin() {
       console.log("Attempting to delete old questions...")
       await Promise.all(snap.docs.map((docu) => deleteDoc(docu.ref)))
       console.log("Old questions deleted. Adding new questions...")
-      // Add new questions
-       await Promise.all(
-      questions.map((q) =>
-        addDoc(collection(db, "aptitude_questions"), {
-          ...q,
-          createdAt: new Date(),
-          category: "Aptitude", // <-- Add this line
-        })
+
+      // Add the first question and get its ID
+      const firstQuestionDocRef = await addDoc(collection(db, "aptitude_questions"), {
+        ...questions[0],
+        createdAt: new Date(),
+        category: "Aptitude",
+      });
+      console.log("First new question added with ID:", firstQuestionDocRef.id);
+
+      // Now, store this ID and creation date in a central document
+      await setDoc(doc(db, "aptitudeInfo", "currentTest"), {
+        testId: firstQuestionDocRef.id,
+        createdAt: new Date(),
+      });
+      console.log("Current test ID saved to aptitudeInfo/currentTest");
+
+      // Add the rest of the questions
+      await Promise.all(
+        questions.slice(1).map((q) =>
+          addDoc(collection(db, "aptitude_questions"), {
+            ...q,
+            createdAt: new Date(),
+            category: "Aptitude",
+          })
+        )
       )
-    )
-    console.log("New questions added!")
+
+      console.log("New questions added!")
       // Force reload for all users (optional, but helps in dev)
       if (typeof window !== "undefined") {
         window.location.reload()
@@ -88,6 +105,7 @@ export function AptitudeAdmin() {
       setMessage("10 questions added and replaced successfully!")
     } catch (e) {
       setMessage("Error adding questions.")
+      console.error(e)
     }
     setLoading(false)
   }

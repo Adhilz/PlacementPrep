@@ -151,100 +151,105 @@ export function AptitudeTest() {
 
   // --- Now that we know questions[currentQuestion] exists, we can use it safely ---
   const currentQ = questions[currentQuestion];
-
-  if (showResults) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-primary-foreground" />
-            </div>
-            <CardTitle className="text-2xl">Test Completed!</CardTitle>
-            <CardDescription>Here are your results</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">
-                {Math.round((correctAnswers / questions.length) * 100)}%
-              </div>
-              <p className="text-muted-foreground">
-                {correctAnswers} out of {questions.length} questions correct
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {questions.map((question, index) => (
-                <div key={question.id} className="border rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-medium">Question {index + 1}</h4>
-                    {selectedAnswers[index] === question.correctAnswer ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-red-500" />
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">{question.question}</p>
-                  <p className="text-sm">
-                    <span className="font-medium">Correct Answer:</span> {question.options[question.correctAnswer]}
-                  </p>
-                  {selectedAnswers[index] !== question.correctAnswer && (
-                    <p className="text-sm text-red-600">
-                      <span className="font-medium">Your Answer:</span>{" "}
-                      {question.options[selectedAnswers[index]] || "Not answered"}
-                    </p>
-                  )}
-                  <p className="text-sm text-muted-foreground mt-2">{question.explanation}</p>
-                </div>
-              ))}
-            </div>
-
-            <Button className="w-full" onClick={() => window.location.reload()}>
-              Take Another Test
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
+if (showResults) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
+    <div className="container mx-auto px-2 sm:px-4 py-6 sm:py-8">
+      <Card className="w-full max-w-2xl mx-auto shadow-lg">
+        <CardHeader className="text-center px-2 sm:px-4">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 text-primary-foreground" />
+          </div>
+          <CardTitle className="text-xl sm:text-2xl">Test Completed!</CardTitle>
+          <CardDescription className="text-sm sm:text-base">Here are your results</CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-5 sm:space-y-6 px-2 sm:px-6">
+          {/* Score Section */}
+          <div className="text-center">
+            <div className="text-3xl sm:text-4xl font-bold text-primary mb-1 sm:mb-2">
+              {Math.round((correctAnswers / questions.length) * 100)}%
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {correctAnswers} out of {questions.length} questions correct
+            </p>
+          </div>
+
+          {/* Question Results */}
+          <div className="space-y-3 sm:space-y-4">
+            {questions.map((question, index) => (
+              <div key={question.id} className="border rounded-lg p-3 sm:p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-medium text-sm sm:text-base">Question {index + 1}</h4>
+                  {selectedAnswers[index] === question.correctAnswer ? (
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0" />
+                  )}
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2">
+                  {question.question}
+                </p>
+                <p className="text-xs sm:text-sm">
+                  <span className="font-medium">Correct Answer:</span>{" "}
+                  {question.options[question.correctAnswer]}
+                </p>
+                {selectedAnswers[index] !== question.correctAnswer && (
+                  <p className="text-xs sm:text-sm text-red-600">
+                    <span className="font-medium">Your Answer:</span>{" "}
+                    {question.options[selectedAnswers[index]] || "Not answered"}
+                  </p>
+                )}
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                  {question.explanation}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Button */}
+          <Button className="w-full text-sm sm:text-base py-2 sm:py-3" onClick={() => window.location.reload()}>
+            Take Another Test
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+
+ return (
+    <div className="container mx-auto px-2 sm:px-4 py-8 max-w-full overflow-hidden">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Sticky Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sticky top-0 bg-white z-40 p-2 sm:p-4 shadow">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
+              <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+              Back
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Aptitude Test</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-lg sm:text-2xl font-bold">Aptitude Test</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Question {currentQuestion + 1} of {questions.length}
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Clock className="w-4 h-4" />
-              <span className="font-mono">{formatTime(timeLeft)}</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            <span className="font-mono">{formatTime(timeLeft)}</span>
             <Badge variant={timeLeft < 300 ? "destructive" : "secondary"}>
-              {timeLeft < 300 ? "Hurry Up!" : "Time Remaining"}
+              {timeLeft < 300 ? "Hurry!" : "Time Left"}
             </Badge>
           </div>
         </div>
 
         {/* Progress */}
-        <div className="mb-8">
-          <Progress value={((currentQuestion + 1) / questions.length) * 100} className="h-2" />
-        </div>
+        <Progress value={((currentQuestion + 1) / questions.length) * 100} className="h-2" />
 
         {/* Question */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+        <Card>
+          <CardHeader className="space-y-3">
+            <div className="flex justify-between">
               <Badge variant="outline">{currentQ.category}</Badge>
               <Badge
                 variant={
@@ -258,68 +263,61 @@ export function AptitudeTest() {
                 {currentQ.difficulty}
               </Badge>
             </div>
-            <CardTitle className="text-xl">{currentQ.question}</CardTitle>
+            <CardTitle className="text-base sm:text-xl">{currentQ.question}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {currentQ.options.map((option, index) => (
-                <Button
-                  key={index}
-                  variant={selectedAnswers[currentQuestion] === index ? "default" : "outline"}
-                  className="w-full justify-start text-left h-auto p-4"
-                  onClick={() => handleAnswerSelect(index)}
-                >
-                  <span className="font-medium mr-3">{String.fromCharCode(65 + index)}.</span>
-                  {option}
-                </Button>
-              ))}
-            </div>
+          <CardContent className="space-y-3">
+            {currentQ.options.map((option, i) => (
+              <Button
+                key={i}
+                variant={selectedAnswers[currentQuestion] === i ? "default" : "outline"}
+                className="w-full justify-start text-left h-auto p-3 sm:p-4 whitespace-normal break-words"
+                onClick={() => handleAnswerSelect(i)}
+              >
+                <span className="font-medium mr-2 sm:mr-3">{String.fromCharCode(65 + i)}.</span>
+                {option}
+              </Button>
+            ))}
           </CardContent>
         </Card>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={handlePreviousQuestion} disabled={currentQuestion === 0}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Previous
+        <div className="flex justify-between">
+          <Button variant="outline" disabled={currentQuestion === 0} onClick={() => setCurrentQuestion(currentQuestion - 1)}>
+            <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" /> Prev
           </Button>
-
-          <div className="flex space-x-2">
-            {currentQuestion === questions.length - 1 ? (
-              <Button onClick={handleSubmitTest} className="px-8">
-                Submit Test
-              </Button>
-            ) : (
-              <Button onClick={handleNextQuestion} disabled={selectedAnswers[currentQuestion] === undefined}>
-                Next
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
-          </div>
+          {currentQuestion === questions.length - 1 ? (
+            <Button onClick={handleSubmitTest} className="px-6 sm:px-8">
+              Submit
+            </Button>
+          ) : (
+            <Button onClick={() => setCurrentQuestion(currentQuestion + 1)}>
+              Next <ArrowRight className="w-4 h-4 ml-1 sm:ml-2" />
+            </Button>
+          )}
         </div>
 
         {/* Question Navigator */}
-        <Card className="mt-6">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Question Navigator</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Question Navigator</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-10 gap-2">
-              {questions.map((_, index) => (
+            <div className="grid grid-cols-5 sm:grid-cols-10 md:grid-cols-12 gap-2">
+              {questions.map((_, i) => (
                 <Button
-                  key={index}
+                  key={i}
                   variant={
-                    index === currentQuestion
+                    i === currentQuestion
                       ? "default"
-                      : selectedAnswers[index] !== undefined
+                      : selectedAnswers[i] !== undefined && selectedAnswers[i] !== -1
                       ? "secondary"
                       : "outline"
                   }
                   size="sm"
-                  className="aspect-square"
-                  onClick={() => setCurrentQuestion(index)}
+                  className="aspect-square text-xs sm:text-sm"
+                  onClick={() => setCurrentQuestion(i)}
                 >
-                  {index + 1}
+                  {i + 1}
                 </Button>
               ))}
             </div>
