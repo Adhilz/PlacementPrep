@@ -22,7 +22,7 @@ jobs:
         run: npm ci
 
       - name: Build Project
-        run: npm run dev # Your project's build command
+        run: npm run build # Your project's build command
 
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
