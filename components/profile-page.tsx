@@ -18,9 +18,16 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
   const [group, setGroup] = useState<{ name: string; members: string[] } | null>(null)
   const [groupLoading, setGroupLoading] = useState(false)
 
-  const isAdmin =
-    userProfile?.username === "adhil_salam" &&
-    userProfile?.email === "adhilsalam200@gmail.com"
+ const adminUsers = [
+  { username: "adhil_salam", email: "adhilsalam200@gmail.com" },
+  { username: "thasleema_sunil", email: "thasleema.connect@gmail.com" }
+];
+const isAdmin = adminUsers.some(
+  admin =>
+    userProfile?.username === admin.username &&
+    userProfile?.email === admin.email
+);
+
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError("")

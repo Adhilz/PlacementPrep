@@ -44,10 +44,10 @@ export function Leaderboard() {
   }, [])
 
   return (
-    <Card className="max-w-md mx-auto mt-8">
-      <CardHeader className="flex flex-row items-center gap-2">
+    <Card className="w-full mt-8">
+      <CardHeader className="flex items-center gap-2">
         <Award className="text-yellow-500" />
-        <CardTitle>Leaderboard</CardTitle>
+        <CardTitle className="text-lg font-bold">Leaderboard</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -58,19 +58,30 @@ export function Leaderboard() {
           <ol className="space-y-4">
             {users.map((user, idx) => (
               <li key={user.uid} className="flex items-center gap-4">
-                <span className={`text-xl font-bold w-6 text-center ${idx === 0 ? "text-yellow-500" : idx === 1 ? "text-gray-400" : "text-orange-700"}`}>
+                {/* Rank */}
+                <span className="text-xl font-bold w-6 text-center">
                   {idx + 1}
                 </span>
+
+                {/* Avatar (bigger than before) */}
                 {user.photoURL ? (
-                  <img src={user.photoURL} alt={user.displayName} className="w-8 h-8 rounded-full" />
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName}
+                    className="w-12 h-12 rounded-full"
+                  />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-lg font-bold">
+                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-xl font-bold">
                     {user.displayName?.[0] || "U"}
                   </div>
                 )}
+
+                {/* Name & Score */}
                 <div className="flex-1">
                   <div className="font-medium">{user.username || user.displayName}</div>
-                  <div className="text-xs text-muted-foreground">Score: {user.stats.totalScore}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Score: {user.stats.totalScore}
+                  </div>
                 </div>
               </li>
             ))}
