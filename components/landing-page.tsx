@@ -222,7 +222,7 @@ export function LandingPage() {
               </div>
               <span className="text-xl font-bold text-primary">PlacementPrep</span>
             </div>
-            <p className="text-muted-foreground">© 2024 PlacementPrep. Empowering careers with AI.</p>
+            <p className="text-muted-foreground">© 2025 PlacementPrep.</p>
           </div>
         </div>
       </footer>

@@ -5,15 +5,15 @@ import { UsernameSetup } from "@/components/auth/username-setup"
 import { LandingPage } from "@/components/landing-page"
 import { Dashboard } from "@/components/dashboard"
 import { AuthProvider } from "@/lib/auth-context"
-//import { LoadingSpinner } from "@/components/loading-spinner"
+import { LoadingSpinner } from "@/components/loading-spinner"
 
 function AppContent() {
   const { user, userProfile, loading } = useAuth()
 
-//  if (loading) {
+ if (loading) {
     // Shows loading spinner
-  //  return <LoadingSpinner />
-//  }
+   return <LoadingSpinner />
+ }
 
   if (user && userProfile && !userProfile.hasSetUsername) {
     // Shows username setup for new users
