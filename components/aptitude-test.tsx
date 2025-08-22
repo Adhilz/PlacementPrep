@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Clock, CheckCircle, XCircle, ArrowLeft, ArrowRight } from "lucide-react"
 
-import { collection, query, orderBy, getDocs } from "firebase/firestore"
+import { collection, query, orderBy, getDocs, doc, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { v4 as uuidv4 } from 'uuid'; // Import UUID library
 
@@ -32,12 +32,25 @@ export function AptitudeTest() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true) // Start with loading set to true
   const [error, setError] = useState("")
-  const [aptitudeTestId, setAptitudeTestId] = useState<string>(''); //Test Id
+  const [aptitudeTestId, setAptitudeTestId] = useState<string>(""); //Test Id
 
-    useEffect(() => {
-        const newId = uuidv4();
-        setAptitudeTestId(newId);
-    }, []);
+  // Fetch the current testId from Firestore
+  useEffect(() => {
+    const fetchTestId = async () => {
+      try {
+        const docRef = doc(db, "aptitudeInfo", "currentTest");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setAptitudeTestId(docSnap.data().testId);
+        } else {
+          setAptitudeTestId("");
+        }
+      } catch {
+        setAptitudeTestId("");
+      }
+    };
+    fetchTestId();
+  }, []);
   useEffect(() => {
     const fetchQuestions = async () => {
       setLoading(true);
@@ -118,12 +131,16 @@ export function AptitudeTest() {
       },
     })
 
-      if (userProfile && updateUserProfile && aptitudeTestId) {
-          const updatedCompletedAptitudeTests = [...(userProfile.completedAptitudeTests || []), aptitudeTestId];
+    if (userProfile && updateUserProfile && aptitudeTestId) {
+      // Only add if not already present
+      const alreadyCompleted = (userProfile.completedAptitudeTests || []).includes(aptitudeTestId);
+      if (!alreadyCompleted) {
+        const updatedCompletedAptitudeTests = [...(userProfile.completedAptitudeTests || []), aptitudeTestId];
         await updateUserProfile({
           completedAptitudeTests: updatedCompletedAptitudeTests,
         });
       }
+    }
   }
 
   const formatTime = (seconds: number) => {

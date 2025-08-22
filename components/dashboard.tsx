@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Brain, Users, Code, TrendingUp, LogOut, User, History, CheckCircle } from "lucide-react"
 import { useState, useEffect } from "react"
+import { collection, doc, getDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 import { GroupDiscussion } from "@/components/group-discussion"
 import { CodingChallenge } from "@/components/coding-challenge"
 import { HistoryPage } from "@/components/history-page"
 import { ProfilePage } from "@/components/profile-page"
-import { AptitudeTest } from "@/components/aptitude-test" // Import AptitudeTest
+import { AptitudeTest }from "@/components/aptitude-test" // Import AptitudeTest as default
 
 interface AptitudeTestProps {
   onBack: () => void;
@@ -46,31 +48,72 @@ export function Dashboard() {
     "dashboard" | "aptitude" | "group-discussion" | "coding-challenge" | "history" | "profile"
   >("dashboard")
   const [completedAptitudeTests, setCompletedAptitudeTests] = useState<string[]>([])
+  const [currentAptitudeTestId, setCurrentAptitudeTestId] = useState<string | null>(null)
+  const [aptitudeLoading, setAptitudeLoading] = useState(true)
+
+  // Helper: get array safely
+  const getArray = (arr: any) => Array.isArray(arr) ? arr : [];
+
+  // Calculate completed modules and scores
+  const completedAptitude = getArray(userProfile?.completedAptitudeTests);
+  const completedCoding = getArray(userProfile?.completedCodingChallenges);
+  // Use a safe cast to access an optional property that may not be declared on the UserProfile type
+  const completedGD = getArray((userProfile as any)?.completedGroupDiscussions);
+
+  // Calculate total score (sum all scores from all activities)
+    const aptitudeScores = getArray((userProfile as any)?.aptitudeTestScores); // [{testId, score}]
+    const codingScores = getArray((userProfile as any)?.codingChallengeScores); // [{challengeId, score}]
+    const gdScores = getArray((userProfile as any)?.groupDiscussionScores); // [{gdId, score}]
+  
+    const totalScore = [
+      ...aptitudeScores.map((a: any) => a.score || 0),
+      ...codingScores.map((c: any) => c.score || 0),
+      ...gdScores.map((g: any) => g.score || 0),
+    ].reduce((acc, val) => acc + val, 0);
 
   useEffect(() => {
-    if (userProfile?.completedAptitudeTests) {
-      setCompletedAptitudeTests(userProfile.completedAptitudeTests)
-    }
+    setCompletedAptitudeTests(completedAptitude)
   }, [userProfile?.completedAptitudeTests])
 
-  // Example modules (aptitudeTests would normally come from Firestore)
+  // Fetch current aptitude testId from Firestore and update on view change
+  useEffect(() => {
+    const fetchTestIdAndUser = async () => {
+      setAptitudeLoading(true)
+      try {
+        const docRef = doc(db, "aptitudeInfo", "currentTest")
+        const docSnap = await getDoc(docRef)
+        if (docSnap.exists()) {
+          setCurrentAptitudeTestId(docSnap.data().testId)
+        } else {
+          setCurrentAptitudeTestId(null)
+        }
+      } catch {
+        setCurrentAptitudeTestId(null)
+      }
+      setAptitudeLoading(false)
+    }
+    fetchTestIdAndUser()
+  }, [currentView, completedAptitude.length])
+
+  // Updated modules with correct stats
   const modules = [
     {
-      id: "aptitude-2025-08-16", // <- should be the Firestore docId for today’s/this batch test
+      id: currentAptitudeTestId || "aptitude-none",
       icon: Brain,
       title: "Aptitude Tests",
       description: "Practice MCQs with AI-generated questions",
-      stats: userProfile?.stats.aptitudeTestsCompleted || 0,
+      stats: completedAptitude.length,
       color: "bg-blue-500",
       action: () => setCurrentView("aptitude"),
-      createdAt: new Date("2025-08-16"), // mock date, replace with Firestore field
+      createdAt: new Date(),
+      isAptitude: true,
     },
     {
       id: "gd-001",
       icon: Users,
       title: "Group Discussions",
       description: "Get AI-generated GD topics",
-      stats: userProfile?.stats.gdTopicsPrepared || 0,
+      stats: completedGD.length,
       color: "bg-green-500",
       action: () => setCurrentView("group-discussion"),
       createdAt: new Date("2025-08-10"),
@@ -80,13 +123,13 @@ export function Dashboard() {
       icon: Code,
       title: "Coding Challenges",
       description: "Weekly coding problems",
-      stats: userProfile?.stats.codingChallengesCompleted || 0,
+      stats: completedCoding.length,
       color: "bg-purple-500",
       action: () => setCurrentView("coding-challenge"),
       createdAt: new Date("2025-08-12"),
     },
-  
   ]
+  
   // Navigation Views
   if (currentView === "aptitude") {
     return <AptitudeTest/>
@@ -117,15 +160,15 @@ export function Dashboard() {
 return (
   <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5">
     {/* Header */}
-    <header className="border-b bg-background/80 backdrop-blur-sm">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+    <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <Brain className="w-5 h-5 text-primary-foreground" />
           </div>
           <span className="text-xl font-bold">PlacementPrep</span>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto justify-center sm:justify-end">
           <Button
             variant="outline"
             size="sm"
@@ -139,15 +182,12 @@ return (
             variant="outline"
             size="sm"
             onClick={() => setCurrentView("profile")}
+            className="flex items-center space-x-2 font-medium truncate max-w-[140px] sm:max-w-none"
+            aria-label="Go to profile"
           >
-            Profile
-          </Button>
-          <div className="flex items-center space-x-2">
             <User className="w-4 h-4" />
-            <span className="font-medium">
-              {userProfile?.username || userProfile?.displayName}
-            </span>
-          </div>
+            <span>{userProfile?.username || userProfile?.displayName}</span>
+          </Button>
           <Button variant="outline" size="sm" onClick={signOut}>
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out
@@ -156,27 +196,27 @@ return (
       </div>
     </header>
 
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-8">
       {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">
+      <div className="mb-6 sm:mb-8 text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">
           Welcome back, {userProfile?.username || userProfile?.displayName}!
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-base sm:text-lg">
           Continue your placement preparation journey
         </p>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Score</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Score</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {userProfile?.stats.totalScore || 0}
+            <div className="text-lg sm:text-2xl font-bold">
+              {totalScore}
             </div>
           </CardContent>
         </Card>
@@ -184,13 +224,13 @@ return (
         {modules.map((module, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 {module.title}
               </CardTitle>
               <module.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{module.stats}</div>
+              <div className="text-lg sm:text-2xl font-bold">{module.stats}</div>
               <p className="text-xs text-muted-foreground">completed</p>
             </CardContent>
           </Card>
@@ -198,9 +238,12 @@ return (
       </div>
 
       {/* Main Modules */}
-      <div className="grid md:grid-cols-3 gap-6 mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mt-6">
         {modules.map((module) => {
-          const isCompleted = completedAptitudeTests.includes(module.id);
+          const isAptitude = module.isAptitude;
+          const isCompleted = isAptitude
+            ? currentAptitudeTestId && completedAptitudeTests.includes(currentAptitudeTestId)
+            : false;
           const isNew =
             module.createdAt &&
             Date.now() - module.createdAt.getTime() < 1000 * 60 * 60 * 24; // last 24h
@@ -218,19 +261,29 @@ return (
               )}
               <CardHeader>
                 <div
-                  className={`w-12 h-12 ${module.color} rounded-lg flex items-center justify-center mb-4`}
+                  className={`w-10 h-10 sm:w-12 sm:h-12 ${module.color} rounded-lg flex items-center justify-center mb-3 sm:mb-4`}
                 >
-                  <module.icon className="w-6 h-6 text-white" />
+                  <module.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <CardTitle>{module.title}</CardTitle>
-                <CardDescription>{module.description}</CardDescription>
+                <CardTitle className="text-base sm:text-lg">{module.title}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">{module.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                {isCompleted ? (
-                  <Button className="w-full" variant="secondary" disabled>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Completed
-                  </Button>
+                {isAptitude ? (
+                  aptitudeLoading ? (
+                    <Button className="w-full" variant="secondary" disabled>
+                      Loading...
+                    </Button>
+                  ) : isCompleted ? (
+                    <Button className="w-full" variant="secondary" disabled>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Completed
+                    </Button>
+                  ) : (
+                    <Button className="w-full" onClick={module.action}>
+                      Start Practice
+                    </Button>
+                  )
                 ) : (
                   <Button className="w-full" onClick={module.action}>
                     Start Practice
@@ -243,10 +296,10 @@ return (
       </div>
 
       {/* Recent Activity */}
-      <Card className="mt-8">
+      <Card className="mt-6 sm:mt-8">
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Your latest practice sessions</CardDescription>
+          <CardTitle className="text-base sm:text-lg">Recent Activity</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">Your latest practice sessions</CardDescription>
         </CardHeader>
         <CardContent>
           {userProfile?.history && userProfile.history.length > 0 ? (
@@ -254,7 +307,7 @@ return (
               {userProfile.history.slice(0, 5).map((activity, idx) => (
                 <div
                   key={activity.id || idx}
-                  className="py-4 flex flex-col md:flex-row md:items-center md:justify-between"
+                  className="py-3 sm:py-4 flex flex-col md:flex-row md:items-center md:justify-between"
                 >
                   <div>
                     <span className="font-semibold">{activity.title}</span>

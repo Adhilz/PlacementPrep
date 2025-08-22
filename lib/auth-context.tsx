@@ -159,20 +159,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserProfile((prev) => prev ? { ...prev, username, hasSetUsername: true } : prev)
   }
 
+  // Helper: calculate total score from history
+  const calculateTotalScore = (history: HistoryItem[]) => {
+    return history.reduce((sum, item) => sum + (item.score || 0), 0);
+  };
+
   const updateStats = async (stats: Partial<UserStats>) => {
     if (!user || !userProfile) return;
 
     const userRef = doc(db, "users", user.uid);
 
-    // Correctly merge the stats
+    // Always recalculate totalScore from history
+    const newTotalScore = calculateTotalScore(userProfile.history || []);
     const updatedStats = {
       ...userProfile.stats,
       ...stats,
+      totalScore: newTotalScore,
     };
 
     await updateDoc(userRef, { stats: updatedStats });
 
-    // Update the local state
     setUserProfile((prev) =>
       prev ? { ...prev, stats: updatedStats } : prev
     );
@@ -196,17 +202,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 };
 
   const addToHistory = async (item: Omit<HistoryItem, "id" | "completedAt">) => {
-    if (!user) return
+    if (!user) return;
     const newItem: HistoryItem = {
       ...item,
       id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
       completedAt: new Date(),
-    }
-    const userRef = doc(db, "users", user.uid)
-    const newHistory = [newItem, ...(userProfile?.history || [])]
-    await updateDoc(userRef, { history: newHistory })
-    setUserProfile((prev) => prev ? { ...prev, history: newHistory } : prev)
-  }
+    };
+    const userRef = doc(db, "users", user.uid);
+    const newHistory = [newItem, ...(userProfile?.history || [])];
+    // Recalculate totalScore
+    const newTotalScore = calculateTotalScore(newHistory);
+    // Update both history and stats.totalScore
+    await updateDoc(userRef, { history: newHistory, "stats.totalScore": newTotalScore });
+    setUserProfile((prev) =>
+      prev ? { ...prev, history: newHistory, stats: { ...prev.stats, totalScore: newTotalScore } } : prev
+    );
+  };
 
   const getRecentHistory = (type?: "aptitude" | "gd" | "coding", limit = 5) => {
     if (!userProfile) return []

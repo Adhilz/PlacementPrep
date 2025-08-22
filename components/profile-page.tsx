@@ -76,15 +76,15 @@ const isAdmin = adminUsers.some(
   if (loading) return <div className="p-8 text-center">Loading...</div>
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="max-w-5xl mx-auto px-2 sm:px-4 py-6 sm:py-8">
       <Button variant="outline" onClick={onBack} className="mb-4">
         &larr; Back
       </Button>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="flex flex-col md:grid md:grid-cols-3 gap-6 sm:gap-8">
         {/* Left Column */}
-        <div className="md:col-span-1 flex flex-col gap-8">
+        <div className="md:col-span-1 flex flex-col gap-6 sm:gap-8">
           {/* Profile Card */}
-          <Card>
+          <Card className="w-full">
             <CardHeader>
               <CardTitle>Profile</CardTitle>
             </CardHeader>
@@ -94,10 +94,10 @@ const isAdmin = adminUsers.some(
                   <img
                     src={userProfile.photoURL}
                     alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover border"
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center text-3xl font-bold">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-muted flex items-center justify-center text-2xl sm:text-3xl font-bold">
                     {userProfile?.displayName?.[0] || "U"}
                   </div>
                 )}
@@ -118,10 +118,10 @@ const isAdmin = adminUsers.some(
                 </Button>
                 {error && <div className="text-red-500 text-sm">{error}</div>}
                 <div className="text-center">
-                  <div className="font-bold text-lg">
+                  <div className="font-bold text-base sm:text-lg">
                     {userProfile?.username || userProfile?.displayName}
                   </div>
-                  <div className="text-muted-foreground text-sm">
+                  <div className="text-muted-foreground text-xs sm:text-sm break-all">
                     {userProfile?.email}
                   </div>
                 </div>
@@ -129,10 +129,12 @@ const isAdmin = adminUsers.some(
             </CardContent>
           </Card>
           {/* Leaderboard */}
-          <Leaderboard />
+          <div className="w-full">
+            <Leaderboard />
+          </div>
         </div>
         {/* Right Column */}
-        <div className="md:col-span-2 flex flex-col gap-8">
+        <div className="md:col-span-2 flex flex-col gap-6 sm:gap-8 mt-6 md:mt-0">
           {isAdmin ? (
             <Card>
               <CardHeader>
@@ -153,11 +155,11 @@ const isAdmin = adminUsers.some(
                 ) : group ? (
                   <>
                     <div className="mb-2 font-semibold">
-                      Group Name:{" "}
-                      <span className="text-primary">{group.name}</span>
+                      Group Name: {" "}
+                      <span className="text-primary break-all">{group.name}</span>
                     </div>
                     <div className="mb-2">Members:</div>
-                    <ul className="list-disc list-inside text-muted-foreground">
+                    <ul className="list-disc list-inside text-muted-foreground break-all">
                       {group.members.map((member, idx) => (
                         <li key={idx}>{member}</li>
                       ))}

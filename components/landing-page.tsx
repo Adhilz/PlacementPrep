@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { collection, getDocs } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -45,11 +47,38 @@ export function LandingPage() {
     },
   ]
 
+
+  // Real-time stats
+  const [totalUsers, setTotalUsers] = useState<number | null>(null)
+  const [totalTests, setTotalTests] = useState<number | null>(null)
+
+  useEffect(() => {
+    // Fetch total users
+    const fetchUsers = async () => {
+      const snap = await getDocs(collection(db, "users"))
+      setTotalUsers(snap.size)
+    }
+    // Fetch total tests taken (sum of all users' history items of type 'aptitude')
+    const fetchTests = async () => {
+      const snap = await getDocs(collection(db, "users"))
+      let count = 0
+      snap.forEach(doc => {
+        const data = doc.data()
+        if (Array.isArray(data.history)) {
+          count += data.history.filter((h: any) => h.type === "aptitude").length
+        }
+      })
+      setTotalTests(count)
+    }
+    fetchUsers()
+    fetchTests()
+  }, [])
+
   const stats = [
-    { label: "Success Rate", value: "94%", icon: Target },
-    { label: "Avg. Improvement", value: "67%", icon: TrendingUp },
+    { label: "Total Users", value: totalUsers !== null ? totalUsers.toLocaleString() : "-", icon: Users },
+    { label: "Total Tests Taken", value: totalTests !== null ? totalTests.toLocaleString() : "-", icon: Brain },
     { label: "Time Saved", value: "40hrs", icon: Clock },
-    { label: "Placements", value: "2.5K+", icon: Award },
+    { label: "Avg. Improvement", value: "67%", icon: TrendingUp },
   ]
 
   const handleSignIn = async () => {
@@ -116,7 +145,7 @@ export function LandingPage() {
                 Start Preparing Now
                 <Play className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button size="lg" variant="outline" className="px-8 py-4 text-lg border-2 hover:bg-muted bg-transparent">
+              <Button size="lg" variant="outline" className="px-8 py-4 text-lg border-2 hover:bg-muted bg-transparent" onClick={() => window.open("https://youtu.be/dQw4w9WgXcQ?si=eq9KJII27TzPrZlC", "_blank")}>
                 Watch Demo
               </Button>
             </div>

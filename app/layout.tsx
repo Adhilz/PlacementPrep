@@ -28,21 +28,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
+    >
       <head>
-        <style>{`
-html {
-  font-family: ${inter.style.fontFamily};
-  --font-sans: ${inter.variable};
-  --font-mono: ${jetbrainsMono.variable};
-}
-        `}</style>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         {/* ✅ fallback favicon if browser expects favicon.ico */}
         <link rel="icon" href="/logo.png" />
       </head>
-      <body
-        className={`${inter.variable} ${jetbrainsMono.variable} min-h-screen bg-background antialiased`}
-      >
+      <body className="min-h-screen bg-background antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -50,9 +46,7 @@ html {
           disableTransitionOnChange
           storageKey="placeprep-theme"
         >
-          <div className="relative flex min-h-screen flex-col">
-            {children}
-          </div>
+          <div className="relative flex min-h-screen flex-col">{children}</div>
         </ThemeProvider>
       </body>
     </html>

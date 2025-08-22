@@ -242,36 +242,38 @@ export function AptitudeAdmin() {
           <Button onClick={exportToCSV} className="mb-4">
             Export to CSV
           </Button>
-          <table className="w-full border-collapse border">
-            <thead>
-              <tr>
-                <th className="border px-2 py-1">Name</th>
-                <th className="border px-2 py-1">Email</th>
-                <th className="border px-2 py-1">Completed Tests</th>
-                <th className="border px-2 py-1">Latest Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {userResults.map((user, idx) => {
-                const aptitudeHistory = (user.history || []).filter(
-                  (h: any) => h.type === "aptitude"
-                )
-                const latestTest = aptitudeHistory.sort(
-                  (a: any, b: any) =>
-                    new Date(b.completedAt).getTime() -
-                    new Date(a.completedAt).getTime()
-                )[0]
-                return (
-                  <tr key={idx}>
-                    <td className="border px-2 py-1">{user.displayName}</td>
-                    <td className="border px-2 py-1">{user.email}</td>
-                    <td className="border px-2 py-1">{aptitudeHistory.length}</td>
-                    <td className="border px-2 py-1">{latestTest?.score ?? "-"}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto border border-gray-200 rounded-lg">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Name</th>
+                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Email</th>
+                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Completed Tests</th>
+                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Latest Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userResults.map((user, idx) => {
+                  const aptitudeHistory = (user.history || []).filter(
+                    (h: any) => h.type === "aptitude"
+                  )
+                  const latestTest = aptitudeHistory.sort(
+                    (a: any, b: any) =>
+                      new Date(b.completedAt).getTime() -
+                      new Date(a.completedAt).getTime()
+                  )[0]
+                  return (
+                    <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{user.displayName}</td>
+                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{user.email}</td>
+                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{aptitudeHistory.length}</td>
+                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{latestTest?.score ?? "-"}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>
