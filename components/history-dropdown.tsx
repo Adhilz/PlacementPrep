@@ -59,9 +59,9 @@ export function HistoryDropdown({ currentPageName }: HistoryDropdownProps) {
 
   if (showHistory) {
     return (
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
-        <Card className="w-full max-w-lg sm:max-w-2xl md:max-w-3xl max-h-[90vh] overflow-hidden rounded-xl">
-          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 px-3 sm:px-6 pt-4 pb-2">
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-1 sm:p-4">
+        <Card className="w-full max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl max-h-[95vh] overflow-hidden rounded-xl shadow-lg">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 px-2 sm:px-6 pt-4 pb-2">
             <div>
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <History className="w-5 h-5" />
@@ -69,11 +69,11 @@ export function HistoryDropdown({ currentPageName }: HistoryDropdownProps) {
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm">Your last 3 activities from each module</CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowHistory(false)}>
+            <Button variant="outline" size="sm" onClick={() => setShowHistory(false)} className="w-full sm:w-auto">
               Close
             </Button>
           </CardHeader>
-          <CardContent className="overflow-y-auto px-2 sm:px-6 pb-4 max-h-[70vh]">
+          <CardContent className="overflow-y-auto px-1 sm:px-6 pb-4 max-h-[75vh]">
             <div className="flex flex-col gap-4">
               {/* Aptitude Tests History */}
               <div>
@@ -84,18 +84,18 @@ export function HistoryDropdown({ currentPageName }: HistoryDropdownProps) {
                 <div className="flex flex-col gap-2">
                   {getRecentHistory("aptitude", 3).length > 0 ? (
                     getRecentHistory("aptitude", 3).map((item) => (
-                      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-muted/50 rounded-lg">
+                      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{item.title}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <p className="font-medium text-xs sm:text-sm truncate">{item.title}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {formatDate(item.completedAt)}
                           </p>
                         </div>
-                        <div className="text-right min-w-[70px]">
-                          {item.percentage && <p className="font-semibold text-blue-600 text-xs">{item.percentage}%</p>}
+                        <div className="text-right min-w-[50px] sm:min-w-[70px]">
+                          {item.percentage && <p className="font-semibold text-blue-600 text-[10px] sm:text-xs">{item.percentage}%</p>}
                           {item.score && (
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
                               <Trophy className="w-3 h-3" />
                               {item.score} pts
                             </p>
@@ -104,7 +104,7 @@ export function HistoryDropdown({ currentPageName }: HistoryDropdownProps) {
                       </div>
                     ))
                   ) : (
-                    <p className="text-muted-foreground text-center py-3 text-xs">No aptitude tests completed yet</p>
+                    <p className="text-muted-foreground text-center py-2 sm:py-3 text-[10px] sm:text-xs">No aptitude tests completed yet</p>
                   )}
                 </div>
               </div>
@@ -118,21 +118,21 @@ export function HistoryDropdown({ currentPageName }: HistoryDropdownProps) {
                 <div className="flex flex-col gap-2">
                   {getRecentHistory("gd", 3).length > 0 ? (
                     getRecentHistory("gd", 3).map((item) => (
-                      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-muted/50 rounded-lg">
+                      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{item.title}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <p className="font-medium text-xs sm:text-sm truncate">{item.title}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {formatDate(item.completedAt)}
                           </p>
                         </div>
-                        <div className="text-right min-w-[70px]">
-                          <p className="text-xs text-green-600 font-medium">Topic Prepared</p>
+                        <div className="text-right min-w-[50px] sm:min-w-[70px]">
+                          <p className="text-[10px] sm:text-xs text-green-600 font-medium">Topic Prepared</p>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <p className="text-muted-foreground text-center py-3 text-xs">No GD topics prepared yet</p>
+                    <p className="text-muted-foreground text-center py-2 sm:py-3 text-[10px] sm:text-xs">No GD topics prepared yet</p>
                   )}
                 </div>
               </div>
@@ -146,17 +146,17 @@ export function HistoryDropdown({ currentPageName }: HistoryDropdownProps) {
                 <div className="flex flex-col gap-2">
                   {getRecentHistory("coding", 3).length > 0 ? (
                     getRecentHistory("coding", 3).map((item) => (
-                      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-muted/50 rounded-lg">
+                      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{item.title}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <p className="font-medium text-xs sm:text-sm truncate">{item.title}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {formatDate(item.completedAt)}
                           </p>
                         </div>
-                        <div className="text-right min-w-[70px]">
+                        <div className="text-right min-w-[50px] sm:min-w-[70px]">
                           {item.score && (
-                            <p className="font-semibold text-purple-600 flex items-center gap-1 text-xs">
+                            <p className="font-semibold text-purple-600 flex items-center gap-1 text-[10px] sm:text-xs">
                               <Trophy className="w-3 h-3" />
                               {item.score} pts
                             </p>
@@ -165,7 +165,7 @@ export function HistoryDropdown({ currentPageName }: HistoryDropdownProps) {
                       </div>
                     ))
                   ) : (
-                    <p className="text-muted-foreground text-center py-3 text-xs">No coding challenges completed yet</p>
+                    <p className="text-muted-foreground text-center py-2 sm:py-3 text-[10px] sm:text-xs">No coding challenges completed yet</p>
                   )}
                 </div>
               </div>

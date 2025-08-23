@@ -28,6 +28,7 @@ export function AptitudeAdmin() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [userResults, setUserResults] = useState<any[]>([])
+  const [groups, setGroups] = useState<any[]>([])
 
   /** --- Handle Question Changes --- */
   const handleChange = (field: string, value: any) => {
@@ -130,9 +131,20 @@ export function AptitudeAdmin() {
     }
   }
 
+  // Fetch users and groups
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    fetchUsers();
+    // Fetch all groups for group info
+    const fetchGroups = async () => {
+      try {
+        const snap = await getDocs(collection(db, "groups"));
+        setGroups(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        setGroups([]);
+      }
+    };
+    fetchGroups();
+  }, []);
 
   /** --- Export CSV for Sheets/Slides --- */
   const exportToCSV = () => {
@@ -161,14 +173,55 @@ export function AptitudeAdmin() {
     link.click()
   }
 
+  /** --- Export CSV for Latest Test Only --- */
+  const exportLatestTestCSV = async () => {
+    // Get the latest testId from aptitudeInfo/currentTest
+    let latestTestId = null;
+    try {
+      const docSnap = await getDocs(collection(db, "aptitudeInfo"));
+      const currentTestDoc = docSnap.docs.find((d) => d.id === "currentTest");
+      if (currentTestDoc) {
+        latestTestId = currentTestDoc.data().testId;
+      }
+    } catch (e) {
+      console.error("Error fetching latest test id", e);
+    }
+    if (!latestTestId) {
+      alert("Could not determine latest test id.");
+      return;
+    }
+
+    // Filter users who have a history entry for this testId with a score
+    const filtered = userResults.filter((user) => {
+      const aptitudeHistory = (user.history || []).filter((h: any) => h.type === "aptitude" && h.testId === latestTestId && typeof h.score === "number");
+      return aptitudeHistory.length > 0;
+    });
+
+    const rows = [
+      ["Name", "Email", "Score for Latest Test"],
+      ...filtered.map((user) => {
+        const entry = (user.history || []).find((h: any) => h.type === "aptitude" && h.testId === latestTestId && typeof h.score === "number");
+        return [user.displayName, user.email, entry?.score ?? "-"];
+      })
+    ];
+
+    const csvContent = rows.map((e) => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "aptitude_latest_test_results.csv");
+    link.click();
+  }
+
   const q = questions[current]
 
   return (
-    <div className="space-y-8">
+  <div className="space-y-8 px-2 sm:px-4 max-w-6xl mx-auto py-4 sm:py-8">
       {/* --- Add / Replace Questions --- */}
-      <Card className="max-w-xl mx-auto">
+  <Card className="w-full max-w-xl mx-auto">
         <CardHeader>
-          <CardTitle>Add Aptitude Questions ({current + 1}/10)</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Add Aptitude Questions ({current + 1}/10)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <input
@@ -233,23 +286,31 @@ export function AptitudeAdmin() {
         </CardContent>
       </Card>
 
-      {/* --- Users Results Table --- */}
-      <Card className="max-w-4xl mx-auto">
+      {/* --- Users Results Table with Group Info --- */}
+  <Card className="w-full max-w-5xl mx-auto">
         <CardHeader>
-          <CardTitle>All Users & Aptitude Results</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">All Users & Aptitude Results</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button onClick={exportToCSV} className="mb-4">
-            Export to CSV
-          </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+            <div className="flex gap-2">
+              <Button onClick={exportToCSV} className="mb-2 sm:mb-0">
+                Export to CSV
+              </Button>
+              <Button onClick={exportLatestTestCSV} variant="outline">
+                Latest Test
+              </Button>
+            </div>
+          </div>
           <div className="overflow-x-auto">
-            <table className="w-full table-auto border border-gray-200 rounded-lg">
+            <table className="w-full table-auto border border-gray-200 rounded-lg text-xs sm:text-sm">
               <thead>
                 <tr className="bg-gray-50">
                   <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Name</th>
                   <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Email</th>
                   <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Completed Tests</th>
                   <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Latest Score</th>
+                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Group</th>
                 </tr>
               </thead>
               <tbody>
@@ -262,12 +323,43 @@ export function AptitudeAdmin() {
                       new Date(b.completedAt).getTime() -
                       new Date(a.completedAt).getTime()
                   )[0]
+                  // Find latest group for this user
+                  let latestGroup: any = null;
+                  let latestJoinedAt: Date | null = null;
+                  groups.forEach((g) => {
+                    if (!Array.isArray(g.members)) return;
+                    const member = g.members.find((m: any) => m.uid === user.uid || (user.username && m.username === user.username));
+                    const joinedAt = member?.joinedAt ? new Date(member.joinedAt) : null;
+                    if (member && joinedAt && (!latestJoinedAt || joinedAt > latestJoinedAt)) {
+                      latestJoinedAt = joinedAt;
+                      latestGroup = g;
+                    }
+                  });
                   return (
                     <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{user.displayName}</td>
+                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-medium">{user.displayName}</td>
                       <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{user.email}</td>
                       <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{aptitudeHistory.length}</td>
                       <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{latestTest?.score ?? "-"}</td>
+                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">
+                        {latestGroup ? (
+                          <div className="flex flex-col gap-1 min-w-[120px]">
+                            <span className="font-semibold text-primary text-xs sm:text-sm">{latestGroup.name}</span>
+                            {latestGroup.topic && (
+                              <span className="text-xs text-muted-foreground">{latestGroup.topic}</span>
+                            )}
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {latestGroup.members.map((m: any, i: number) => (
+                                <span key={i} className={`inline-block px-2 py-0.5 rounded bg-muted/60 text-xs ${m.uid === user.uid ? 'font-bold bg-primary/20 text-primary' : ''}`}>
+                                  {m.displayName || m.username || m.email || m.uid}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </td>
                     </tr>
                   )
                 })}

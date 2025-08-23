@@ -79,8 +79,8 @@ export function HistoryPage({ onBack }: { onBack: () => void }) {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5">
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="w-full max-w-2xl md:max-w-3xl lg:max-w-5xl mx-auto px-2 sm:px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Button variant="ghost" size="sm" onClick={onBack}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
@@ -89,51 +89,51 @@ export function HistoryPage({ onBack }: { onBack: () => void }) {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Brain className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">PlacementPrep - History</span>
+              <span className="text-lg sm:text-xl font-bold">PlacementPrep - History</span>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="w-full max-w-2xl md:max-w-3xl lg:max-w-5xl mx-auto px-2 sm:px-4 py-6 sm:py-8">
         {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Your Learning History</h1>
-          <p className="text-muted-foreground">Track your progress across all modules</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Your Learning History</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Track your progress across all modules</p>
         </div>
 
         {/* Aptitude Tests History with Speedometers */}
-        <Card className="mb-8">
+        <Card className="mb-6 sm:mb-8">
           <CardHeader>
             <div className="flex items-center space-x-2">
               <Brain className="w-5 h-5 text-blue-500" />
-              <CardTitle>Aptitude Tests</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Aptitude Tests</CardTitle>
             </div>
-            <CardDescription>Your recent test performances</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Your recent test performances</CardDescription>
           </CardHeader>
           <CardContent>
             {aptitudeHistory && aptitudeHistory.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
                 {aptitudeHistory.map((test, index) => (
-                  <div key={test.id} className="border rounded-lg p-4 bg-card">
+                  <div key={test.id} className="border rounded-lg p-3 sm:p-4 bg-card">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="font-semibold">Test #{aptitudeHistory.length - index}</h3>
-                        <p className="text-sm text-muted-foreground flex items-center">
+                        <h3 className="font-semibold text-sm sm:text-base">Test #{aptitudeHistory.length - index}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground flex items-center">
                           <Calendar className="w-3 h-3 mr-1" />
                           {formatDate(test.completedAt)}
                         </p>
                       </div>
-                      <Speedometer percentage={test.percentage || 0} size={80} />
+                      <Speedometer percentage={test.percentage || 0} size={70} />
                     </div>
                     <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs sm:text-sm">
                         <span>Score:</span>
                         <span className="font-medium">
                           {test.details?.correctAnswers || 0}/{test.details?.totalQuestions || 0}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs sm:text-sm">
                         <span>Points:</span>
                         <span className="font-medium text-green-600">+{test.score || 0}</span>
                       </div>
@@ -158,36 +158,36 @@ export function HistoryPage({ onBack }: { onBack: () => void }) {
               <div className="text-center py-8 text-muted-foreground">
                 <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No aptitude tests completed yet</p>
-                <p className="text-sm">Start practicing to see your progress here!</p>
+                <p className="text-xs sm:text-sm">Start practicing to see your progress here!</p>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Group Discussions History */}
-        <Card className="mb-8">
+        <Card className="mb-6 sm:mb-8">
           <CardHeader>
             <div className="flex items-center space-x-2">
               <Users className="w-5 h-5 text-green-500" />
-              <CardTitle>Group Discussions</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Group Discussions</CardTitle>
             </div>
-            <CardDescription>Topics you've prepared</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Topics you've prepared</CardDescription>
           </CardHeader>
           <CardContent>
             {gdHistory && gdHistory.length > 0 ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 {gdHistory.map((gd, index) => (
-                  <div key={gd.id} className="border rounded-lg p-4 bg-card">
-                    <div className="flex items-start justify-between">
+                  <div key={gd.id} className="border rounded-lg p-3 sm:p-4 bg-card">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                       <div className="flex-1">
-                        <h3 className="font-semibold mb-2">{gd.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <h3 className="font-semibold mb-2 text-sm sm:text-base">{gd.title}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                           {gd.details?.category || "General"} • {gd.details?.difficulty || "Medium"}
                         </p>
-                        {gd.details?.notes && <p className="text-sm bg-muted p-2 rounded">{gd.details.notes}</p>}
+                        {gd.details?.notes && <p className="text-xs sm:text-sm bg-muted p-2 rounded">{gd.details.notes}</p>}
                       </div>
-                      <div className="text-right ml-4">
-                        <p className="text-sm text-muted-foreground flex items-center">
+                      <div className="text-right ml-0 sm:ml-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground flex items-center">
                           <Calendar className="w-3 h-3 mr-1" />
                           {formatDate(gd.completedAt)}
                         </p>
@@ -201,7 +201,7 @@ export function HistoryPage({ onBack }: { onBack: () => void }) {
               <div className="text-center py-8 text-muted-foreground">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No GD topics prepared yet</p>
-                <p className="text-sm">Generate and save topics to see them here!</p>
+                <p className="text-xs sm:text-sm">Generate and save topics to see them here!</p>
               </div>
             )}
           </CardContent>
@@ -212,19 +212,19 @@ export function HistoryPage({ onBack }: { onBack: () => void }) {
           <CardHeader>
             <div className="flex items-center space-x-2">
               <Code className="w-5 h-5 text-purple-500" />
-              <CardTitle>Coding Challenges</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Coding Challenges</CardTitle>
             </div>
-            <CardDescription>Problems you've solved</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Problems you've solved</CardDescription>
           </CardHeader>
           <CardContent>
             {codingHistory && codingHistory.length > 0 ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 {codingHistory.map((challenge, index) => (
-                  <div key={challenge.id} className="border rounded-lg p-4 bg-card">
-                    <div className="flex items-start justify-between">
+                  <div key={challenge.id} className="border rounded-lg p-3 sm:p-4 bg-card">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                       <div className="flex-1">
-                        <h3 className="font-semibold mb-2">{challenge.title}</h3>
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
+                        <h3 className="font-semibold mb-2 text-sm sm:text-base">{challenge.title}</h3>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-2">
                           <span
                             className={`px-2 py-1 rounded text-xs ${
                               challenge.details?.difficulty === "Easy"
@@ -242,14 +242,14 @@ export function HistoryPage({ onBack }: { onBack: () => void }) {
                           </span>
                         </div>
                         {challenge.details?.runtime && (
-                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                             <span>Runtime: {challenge.details.runtime}</span>
                             <span>Memory: {challenge.details.memory}</span>
                           </div>
                         )}
                       </div>
-                      <div className="text-right ml-4">
-                        <p className="text-sm text-muted-foreground flex items-center">
+                      <div className="text-right ml-0 sm:ml-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground flex items-center">
                           <Calendar className="w-3 h-3 mr-1" />
                           {formatDate(challenge.completedAt)}
                         </p>
@@ -271,7 +271,7 @@ export function HistoryPage({ onBack }: { onBack: () => void }) {
               <div className="text-center py-8 text-muted-foreground">
                 <Code className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No coding challenges completed yet</p>
-                <p className="text-sm">Solve problems to see your progress here!</p>
+                <p className="text-xs sm:text-sm">Solve problems to see your progress here!</p>
               </div>
             )}
           </CardContent>

@@ -103,6 +103,7 @@ export function AptitudeTest() {
   }
 
   const handleSubmitTest = async () => {
+  const { recalculateAndUpdateTotalScore } = await import("@/lib/update-total-score");
     setIsCompleted(true)
     setShowResults(true)
 
@@ -112,11 +113,14 @@ export function AptitudeTest() {
 
     const score = Math.round((correctAnswers / questions.length) * 100)
 
-    // Update user stats
-    await updateStats({
-      aptitudeTestsCompleted: 1,
-      totalScore: score,
-    })
+    // Calculate totalScore: sum of all previous aptitude test scores + this attempt
+    let prevAptitudeTotal = 0;
+    if (userProfile?.history && Array.isArray(userProfile.history)) {
+      prevAptitudeTotal = userProfile.history
+        .filter((h: any) => h.type === "aptitude" && typeof h.score === "number")
+        .reduce((acc: number, h: any) => acc + h.score, 0);
+    }
+    const newTotalScore = prevAptitudeTotal + score;
 
     // Add to history
     await addToHistory({
@@ -129,7 +133,13 @@ export function AptitudeTest() {
         totalQuestions: questions.length,
         selectedAnswers,
       },
-    })
+    });
+
+    // Update stats with correct totalScore
+    await updateStats({
+      aptitudeTestsCompleted: 1,
+      totalScore: newTotalScore,
+    });
 
     if (userProfile && updateUserProfile && aptitudeTestId) {
       // Only add if not already present
@@ -140,6 +150,11 @@ export function AptitudeTest() {
           completedAptitudeTests: updatedCompletedAptitudeTests,
         });
       }
+    }
+
+    // Always recalculate and update totalScore in Firestore after test completion
+    if (userProfile?.uid) {
+      await recalculateAndUpdateTotalScore(userProfile.uid);
     }
   }
 

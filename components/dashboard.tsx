@@ -57,19 +57,32 @@ export function Dashboard() {
   // Calculate completed modules and scores
   const completedAptitude = getArray(userProfile?.completedAptitudeTests);
   const completedCoding = getArray(userProfile?.completedCodingChallenges);
-  // Use a safe cast to access an optional property that may not be declared on the UserProfile type
-  const completedGD = getArray((userProfile as any)?.completedGroupDiscussions);
+  // Always use history for completedGD so dashboard is always up to date
+  const completedGD = Array.isArray(userProfile?.history)
+    ? userProfile.history.filter((h) => typeof (h as any).type === "string" && ((h as any).type === "gd" || (h as any).type === "group-discussion"))
+    : [];
 
-  // Calculate total score (sum all scores from all activities)
-    const aptitudeScores = getArray((userProfile as any)?.aptitudeTestScores); // [{testId, score}]
-    const codingScores = getArray((userProfile as any)?.codingChallengeScores); // [{challengeId, score}]
-    const gdScores = getArray((userProfile as any)?.groupDiscussionScores); // [{gdId, score}]
-  
-    const totalScore = [
-      ...aptitudeScores.map((a: any) => a.score || 0),
-      ...codingScores.map((c: any) => c.score || 0),
-      ...gdScores.map((g: any) => g.score || 0),
-    ].reduce((acc, val) => acc + val, 0);
+  // Fetch all user history from Firestore and sum all aptitude and coding challenge scores
+  const [totalScore, setTotalScore] = useState(0);
+  const [moduleScores, setModuleScores] = useState({ aptitude: 0, coding: 0, gd: 0 });
+
+  useEffect(() => {
+    // Always use userProfile.history for dashboard stats
+    if (currentView === "dashboard" && Array.isArray(userProfile?.history)) {
+      let aptitude = 0, coding = 0, gd = 0;
+      userProfile.history.forEach((h) => {
+        if ((h as any).type === "aptitude" && typeof (h as any).score === "number") {
+          aptitude += (h as any).score;
+        } else if ((h as any).type === "coding" && typeof (h as any).score === "number") {
+          coding += (h as any).score;
+        } else if (typeof (h as any).type === "string" && ((h as any).type === "gd" || (h as any).type === "group-discussion") && typeof (h as any).score === "number") {
+          gd += (h as any).score;
+        }
+      });
+      setTotalScore(aptitude + coding + gd);
+      setModuleScores({ aptitude, coding, gd });
+    }
+  }, [currentView, userProfile?.history]);
 
   useEffect(() => {
     setCompletedAptitudeTests(completedAptitude)
@@ -221,20 +234,47 @@ return (
           </CardContent>
         </Card>
 
-        {modules.map((module, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">
-                {module.title}
-              </CardTitle>
-              <module.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg sm:text-2xl font-bold">{module.stats}</div>
-              <p className="text-xs text-muted-foreground">completed</p>
-            </CardContent>
-          </Card>
-        ))}
+        {/* Show module stats with score next to count */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Aptitude Tests</CardTitle>
+            <Brain className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg sm:text-2xl font-bold flex items-center gap-2">
+              {completedAptitude.length}
+              <span className="text-xs text-muted-foreground">({moduleScores.aptitude} pts)</span>
+            </div>
+            <p className="text-xs text-muted-foreground">completed</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Coding Challenges</CardTitle>
+            <Code className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg sm:text-2xl font-bold flex items-center gap-2">
+              {completedCoding.length}
+              <span className="text-xs text-muted-foreground">({moduleScores.coding} pts)</span>
+            </div>
+            <p className="text-xs text-muted-foreground">completed</p>
+          </CardContent>
+        </Card>
+        {/* Group Discussions module card with points */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Group Discussions</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg sm:text-2xl font-bold flex items-center gap-2">
+              {completedGD.length}
+              <span className="text-xs text-muted-foreground">({moduleScores.gd} pts)</span>
+            </div>
+            <p className="text-xs text-muted-foreground">completed</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Modules */}
@@ -304,24 +344,29 @@ return (
         <CardContent>
           {userProfile?.history && userProfile.history.length > 0 ? (
             <div className="divide-y">
-              {userProfile.history.slice(0, 5).map((activity, idx) => (
-                <div
-                  key={activity.id || idx}
-                  className="py-3 sm:py-4 flex flex-col md:flex-row md:items-center md:justify-between"
-                >
-                  <div>
-                    <span className="font-semibold">{activity.title}</span>
-                    {activity.score !== undefined && (
-                      <span className="ml-2 text-primary font-bold">
-                        {activity.score} pts
-                      </span>
-                    )}
+              {userProfile.history
+                .filter((activity) =>
+                  ["aptitude", "coding", "gd", "group-discussion"].includes(activity.type)
+                )
+                .slice(0, 5)
+                .map((activity, idx) => (
+                  <div
+                    key={activity.id || idx}
+                    className="py-3 sm:py-4 flex flex-col md:flex-row md:items-center md:justify-between"
+                  >
+                    <div>
+                      <span className="font-semibold">{activity.title}</span>
+                      {activity.score !== undefined && (
+                        <span className="ml-2 text-primary font-bold">
+                          {activity.score} pts
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1 md:mt-0">
+                      {formatDate(activity.completedAt)}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1 md:mt-0">
-                    {formatDate(activity.completedAt)}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">

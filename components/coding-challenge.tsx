@@ -201,7 +201,8 @@ export function CodingChallenge({ onBack }: CodingChallengeProps) {
     { value: "python", label: "Python" },
     { value: "java", label: "Java" },
     { value: "cpp", label: "C++" },
-  ]
+    { value: "c", label: "C" },
+  ];
 
   const getDefaultCode = (lang: string) => {
     switch (lang) {
@@ -212,45 +213,32 @@ export function CodingChallenge({ onBack }: CodingChallengeProps) {
  * @return {number[]}
  */
 var twoSum = function(nums, target) {
-    // Your solution here
-    
-};`
+  // Your solution here
+};`;
       case "python":
-        return `class Solution:
-    def twoSum(self, nums: List[int], target: int) -> List[int]:
-        # Your solution here
-        pass`
+        return `class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        # Your solution here\n        pass`;
       case "java":
-        return `class Solution {
-    public int[] twoSum(int[] nums, int target) {
-        // Your solution here
-        
-    }
-}`
+        return `class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Your solution here\n    }\n}`;
       case "cpp":
-        return `class Solution {
-public:
-    vector<int> twoSum(vector<int>& nums, int target) {
-        // Your solution here
-        
-    }
-};`
+        return `class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Your solution here\n    }\n};`;
+      case "c":
+        return `#include <stdio.h>\n\n// Write your C solution here\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    // Your solution here\n    return NULL;\n}`;
       default:
-        return ""
+        return "";
     }
-  }
+  };
 
   const handleLanguageChange = (newLanguage: string) => {
-    setLanguage(newLanguage)
-    setCode(getDefaultCode(newLanguage))
-  }
+    setLanguage(newLanguage);
+    setCode(getDefaultCode(newLanguage));
+  };
 
+  // Only simulate result, do not call any API or show output
   const handleSubmit = async () => {
-    if (!selectedProblem || !code.trim()) return
-
+    if (!selectedProblem || !code.trim()) return;
     // Simulate submission result
-    const results = ["Accepted", "Wrong Answer", "Time Limit Exceeded"]
-    const randomResult = results[Math.floor(Math.random() * results.length)]
+    const results = ["Accepted", "Wrong Answer", "Time Limit Exceeded"];
+    const randomResult = results[Math.floor(Math.random() * results.length)];
 
     const newSolution: Solution = {
       id: Date.now().toString(),
@@ -261,10 +249,9 @@ public:
       status: randomResult as Solution["status"],
       runtime: randomResult === "Accepted" ? `${Math.floor(Math.random() * 100) + 50}ms` : undefined,
       memory: randomResult === "Accepted" ? `${Math.floor(Math.random() * 20) + 40}MB` : undefined,
-    }
+    };
 
-      const updatedSolutions = [newSolution, ...solutions];
-
+    const updatedSolutions = [newSolution, ...solutions];
     setSolutions(updatedSolutions);
 
     if (randomResult === "Accepted") {
@@ -281,24 +268,23 @@ public:
           difficulty: selectedProblem.difficulty,
           category: selectedProblem.category,
         },
-      })
+      });
 
       updateStats({
         codingChallengesCompleted: 1,
         totalScore: selectedProblem.points,
-      })
+      });
 
-      // Update user profile with completed challenge
       if (userProfile && updateUserProfile) {
         await updateUserProfile({
           completedCodingChallenges: updatedCompletedProblems,
-          solutions: updatedSolutions
+          solutions: updatedSolutions,
         });
-        setCompletedProblems(updatedCompletedProblems)
+        setCompletedProblems(updatedCompletedProblems);
       }
       console.log(
         `[v0] Coding challenge completed - Problem: ${selectedProblem.title}, Points: ${selectedProblem.points}`,
-      )
+      );
     }
 
     setSubmissionResult({
@@ -311,7 +297,7 @@ public:
           : randomResult === "Wrong Answer"
             ? "Your solution failed some test cases. Check your logic."
             : "Your solution exceeded the time limit. Try optimizing your algorithm.",
-    })
+    });
   }
 
   const getDifficultyColor = (difficulty: string) => {
@@ -450,7 +436,6 @@ public:
                   placeholder="Write your solution here..."
                   className="font-mono text-sm min-h-[400px]"
                 />
-
                 <div className="flex space-x-2">
                   <Button onClick={handleSubmit} className="flex-1">
                     <Play className="w-4 h-4 mr-2" />
@@ -460,7 +445,6 @@ public:
                     Reset
                   </Button>
                 </div>
-
                 {/* Submission Result */}
                 {submissionResult && (
                   <Card
@@ -588,6 +572,7 @@ public:
               </Card>
             ) : (
               <div className="space-y-4">
+                {/* Show all solutions, not just accepted ones */}
                 {solutions.map((solution) => {
                   const problem = sampleProblems.find((p) => p.id === solution.problemId)
                   return (
