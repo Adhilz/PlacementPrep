@@ -191,6 +191,9 @@ export function HistoryPage({ onBack }: { onBack: () => void }) {
                           <Calendar className="w-3 h-3 mr-1" />
                           {formatDate(gd.completedAt)}
                         </p>
+                        {typeof gd.score === 'number' && (
+                          <span className="inline-block px-2 py-1 rounded text-xs mt-1 bg-green-100 text-green-800 font-semibold">+{gd.score} pts</span>
+                        )}
                         {gd.details?.groupId && <p className="text-xs text-blue-600 mt-1">Group Activity</p>}
                       </div>
                     </div>

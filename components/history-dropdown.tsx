@@ -127,7 +127,14 @@ export function HistoryDropdown({ currentPageName }: HistoryDropdownProps) {
                           </p>
                         </div>
                         <div className="text-right min-w-[50px] sm:min-w-[70px]">
-                          <p className="text-[10px] sm:text-xs text-green-600 font-medium">Topic Prepared</p>
+                          {typeof item.score === 'number' ? (
+                            <p className="font-semibold text-green-600 flex items-center gap-1 text-[10px] sm:text-xs">
+                              <Trophy className="w-3 h-3" />
+                              {item.score} pts
+                            </p>
+                          ) : (
+                            <p className="text-[10px] sm:text-xs text-green-600 font-medium">Topic Prepared</p>
+                          )}
                         </div>
                       </div>
                     ))

@@ -302,69 +302,71 @@ export function AptitudeAdmin() {
               </Button>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto border border-gray-200 rounded-lg text-xs sm:text-sm">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Name</th>
-                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Email</th>
-                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Completed Tests</th>
-                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Latest Score</th>
-                  <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Group</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userResults.map((user, idx) => {
-                  const aptitudeHistory = (user.history || []).filter(
-                    (h: any) => h.type === "aptitude"
-                  )
-                  const latestTest = aptitudeHistory.sort(
-                    (a: any, b: any) =>
-                      new Date(b.completedAt).getTime() -
-                      new Date(a.completedAt).getTime()
-                  )[0]
-                  // Find latest group for this user
-                  let latestGroup: any = null;
-                  let latestJoinedAt: Date | null = null;
-                  groups.forEach((g) => {
-                    if (!Array.isArray(g.members)) return;
-                    const member = g.members.find((m: any) => m.uid === user.uid || (user.username && m.username === user.username));
-                    const joinedAt = member?.joinedAt ? new Date(member.joinedAt) : null;
-                    if (member && joinedAt && (!latestJoinedAt || joinedAt > latestJoinedAt)) {
-                      latestJoinedAt = joinedAt;
-                      latestGroup = g;
-                    }
-                  });
-                  return (
-                    <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-medium">{user.displayName}</td>
-                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{user.email}</td>
-                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{aptitudeHistory.length}</td>
-                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{latestTest?.score ?? "-"}</td>
-                      <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">
-                        {latestGroup ? (
-                          <div className="flex flex-col gap-1 min-w-[120px]">
-                            <span className="font-semibold text-primary text-xs sm:text-sm">{latestGroup.name}</span>
-                            {latestGroup.topic && (
-                              <span className="text-xs text-muted-foreground">{latestGroup.topic}</span>
-                            )}
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {latestGroup.members.map((m: any, i: number) => (
-                                <span key={i} className={`inline-block px-2 py-0.5 rounded bg-muted/60 text-xs ${m.uid === user.uid ? 'font-bold bg-primary/20 text-primary' : ''}`}>
-                                  {m.displayName || m.username || m.email || m.uid}
-                                </span>
-                              ))}
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[600px]">
+              <table className="w-full table-auto border border-gray-200 rounded-lg text-xs sm:text-sm">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Name</th>
+                    <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Email</th>
+                    <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Completed Tests</th>
+                    <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Latest Score</th>
+                    <th className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-semibold">Group</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userResults.map((user, idx) => {
+                    const aptitudeHistory = (user.history || []).filter(
+                      (h: any) => h.type === "aptitude"
+                    )
+                    const latestTest = aptitudeHistory.sort(
+                      (a: any, b: any) =>
+                        new Date(b.completedAt).getTime() -
+                        new Date(a.completedAt).getTime()
+                    )[0]
+                    // Find latest group for this user
+                    let latestGroup: any = null;
+                    let latestJoinedAt: Date | null = null;
+                    groups.forEach((g) => {
+                      if (!Array.isArray(g.members)) return;
+                      const member = g.members.find((m: any) => m.uid === user.uid || (user.username && m.username === user.username));
+                      const joinedAt = member?.joinedAt ? new Date(member.joinedAt) : null;
+                      if (member && joinedAt && (!latestJoinedAt || joinedAt > latestJoinedAt)) {
+                        latestJoinedAt = joinedAt;
+                        latestGroup = g;
+                      }
+                    });
+                    return (
+                      <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                        <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap font-medium">{user.displayName}</td>
+                        <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{user.email}</td>
+                        <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{aptitudeHistory.length}</td>
+                        <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">{latestTest?.score ?? "-"}</td>
+                        <td className="border border-gray-200 px-3 py-2 text-left whitespace-nowrap">
+                          {latestGroup ? (
+                            <div className="flex flex-col gap-1 min-w-[120px]">
+                              <span className="font-semibold text-primary text-xs sm:text-sm">{latestGroup.name}</span>
+                              {latestGroup.topic && (
+                                <span className="text-xs text-muted-foreground">{latestGroup.topic}</span>
+                              )}
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {latestGroup.members.map((m: any, i: number) => (
+                                  <span key={i} className={`inline-block px-2 py-0.5 rounded bg-muted/60 text-xs ${m.uid === user.uid ? 'font-bold bg-primary/20 text-primary' : ''}`}>
+                                    {m.displayName || m.username || m.email || m.uid}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

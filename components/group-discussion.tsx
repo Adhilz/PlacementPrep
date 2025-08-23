@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -467,6 +467,15 @@ export function GroupDiscussion({ onBack }: GroupDiscussionProps) {
   };
 
   // Fullscreen chat view if currentGroup is set
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastMessageRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [messages.length]);
+
   if (currentGroup) {
     const isCreator = userProfile && currentGroup.createdBy === userProfile.uid;
     // Submission handler
@@ -512,31 +521,40 @@ export function GroupDiscussion({ onBack }: GroupDiscussionProps) {
         await addDoc(collection(db, "groupSubmissions"), submission);
         setGroupSubmissions(prev => [submission, ...prev]);
 
-        // Update user's Firestore history so dashboard and recent activity update immediately
-        if (userProfile?.uid) {
-          const userDocRef = doc(db, "users", userProfile.uid);
-          // Fetch current history
-          const userDocSnap = await getDoc(userDocRef);
-          let history = [];
-          if (userDocSnap.exists()) {
-            const data = userDocSnap.data();
-            history = Array.isArray(data.history) ? data.history : [];
-          }
-          // Add new GD submission to history
-          const newHistoryItem = {
-            id: submission.groupId + "-" + submission.submittedAt,
-            type: "group-discussion",
-            title: `GD: ${submission.topic}`,
-            score: result.score || 0,
-            completedAt: submission.submittedAt,
-            details: {
-              groupId: submission.groupId,
-              groupName: submission.groupName,
-              topic: submission.topic,
-              evaluation: result,
-            },
-          };
-          await updateDoc(userDocRef, { history: [newHistoryItem, ...history] });
+        // Update all group members' Firestore history and recalculate their totalScore for leaderboard
+        if (currentGroup?.members && Array.isArray(currentGroup.members)) {
+          await Promise.all(currentGroup.members.map(async (member) => {
+            const userDocRef = doc(db, "users", member.uid);
+            // Fetch current history
+            const userDocSnap = await getDoc(userDocRef);
+            let history = [];
+            if (userDocSnap.exists()) {
+              const data = userDocSnap.data();
+              history = Array.isArray(data.history) ? data.history : [];
+            }
+            // Add new GD submission to history
+            const newHistoryItem = {
+              id: submission.groupId + "-" + submission.submittedAt,
+              type: "group-discussion",
+              title: `GD: ${submission.topic}`,
+              score: result.score || 0,
+              completedAt: submission.submittedAt,
+              details: {
+                groupId: submission.groupId,
+                groupName: submission.groupName,
+                topic: submission.topic,
+                evaluation: result,
+              },
+            };
+            await updateDoc(userDocRef, { history: [newHistoryItem, ...history] });
+            // Recalculate and update totalScore for leaderboard
+            try {
+              const { recalculateAndUpdateTotalScore } = await import("@/lib/update-total-score");
+              await recalculateAndUpdateTotalScore(member.uid);
+            } catch (e) {
+              console.error("Failed to update totalScore for leaderboard", e);
+            }
+          }));
         }
       } catch (err) {
         setSubmissionResult({ error: "Failed to evaluate GD." });
@@ -590,24 +608,35 @@ export function GroupDiscussion({ onBack }: GroupDiscussionProps) {
         </div>
         {/* Chatroom UI */}
         <div className="flex-1 flex flex-col px-2 md:px-4 pb-4">
-          <div className="flex-1 overflow-y-auto bg-muted rounded-lg p-3 flex flex-col gap-2 mb-2" style={{ minHeight: 200 }}>
+          <div
+            className="flex-1 overflow-y-auto bg-muted rounded-lg p-3 flex flex-col gap-2 mb-2"
+            style={{ minHeight: 200, maxHeight: 400 }}
+            ref={chatContainerRef}
+          >
             {messages.length === 0 ? (
               <div className="text-muted-foreground text-sm text-center my-auto">No messages yet. Start the discussion!</div>
             ) : (
-              messages.map((msg) => (
-                <div key={msg.id} className={`flex items-start gap-2 ${msg.senderId === userProfile?.uid ? 'justify-end' : ''}`}>
-                  {msg.senderId !== userProfile?.uid && (
-                    <img src={msg.senderPhoto || `https://ui-avatars.com/api/?name=${msg.senderName}&background=random`} alt={msg.senderName} className="w-8 h-8 rounded-full" />
-                  )}
-                  <div className={`rounded-lg px-3 py-2 ${msg.senderId === userProfile?.uid ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}
-                    title={msg.senderName + (msg.senderId === userProfile?.uid ? ' (You)' : '')}
+              messages.map((msg, idx) => {
+                const isLast = idx === messages.length - 1;
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex items-start gap-2 ${msg.senderId === userProfile?.uid ? 'justify-end' : ''}`}
+                    ref={isLast ? lastMessageRef : undefined}
                   >
-                    <div className="text-xs font-semibold mb-1">{msg.senderName}{msg.senderId === userProfile?.uid ? ' (You)' : ''}</div>
-                    <div className="text-sm">{msg.text}</div>
-                    <div className="text-[10px] text-muted-foreground mt-1 text-right">{msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString() : ''}</div>
+                    {msg.senderId !== userProfile?.uid && (
+                      <img src={msg.senderPhoto || `https://ui-avatars.com/api/?name=${msg.senderName}&background=random`} alt={msg.senderName} className="w-8 h-8 rounded-full" />
+                    )}
+                    <div className={`rounded-lg px-3 py-2 ${msg.senderId === userProfile?.uid ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}
+                      title={msg.senderName + (msg.senderId === userProfile?.uid ? ' (You)' : '')}
+                    >
+                      <div className="text-xs font-semibold mb-1">{msg.senderName}{msg.senderId === userProfile?.uid ? ' (You)' : ''}</div>
+                      <div className="text-sm">{msg.text}</div>
+                      <div className="text-[10px] text-muted-foreground mt-1 text-right">{msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString() : ''}</div>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
           <form className="flex gap-2" onSubmit={async e => {
