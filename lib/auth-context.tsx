@@ -54,18 +54,20 @@ interface UserProfile {
   completedAptitudeTests: string[];
 }
 
+
 interface AuthContextType {
-  user: User | null
-  userProfile: UserProfile | null
-  loading: boolean
-  signInWithGoogle: () => Promise<void>
-  signOut: () => Promise<void>
-  updateUsername: (username: string) => Promise<void>
-  updateStats: (stats: Partial<UserStats>) => Promise<void>
-  addToHistory: (item: Omit<HistoryItem, "id" | "completedAt">) => Promise<void>
-  getRecentHistory: (type?: "aptitude" | "gd" | "coding", limit?: number) => HistoryItem[]
-  shareWithGroup: (groupId: string, item: HistoryItem) => Promise<void>
-    updateUserProfile: (profile: Partial<UserProfile>) => Promise<void>;
+  user: User | null;
+  userProfile: UserProfile | null;
+  loading: boolean;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
+  updateUsername: (username: string) => Promise<void>;
+  updateStats: (stats: Partial<UserStats>) => Promise<void>;
+  addToHistory: (item: Omit<HistoryItem, "id" | "completedAt">) => Promise<void>;
+  getRecentHistory: (type?: "aptitude" | "gd" | "coding", limit?: number) => HistoryItem[];
+  shareWithGroup: (groupId: string, item: HistoryItem) => Promise<void>;
+  updateUserProfile: (profile: Partial<UserProfile>) => Promise<void>;
+  addLeetCodeSubmission: (submission: Solution) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -243,6 +245,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return date;
   };
 
+  // Add a LeetCode code submission and keep only the latest 3
+  const addLeetCodeSubmission = async (submission: Solution) => {
+    if (!user) return;
+    const userRef = doc(db, "users", user.uid);
+    // Get current submissions
+    const userDoc = await getDoc(userRef);
+    let prevSubs: Solution[] = [];
+    if (userDoc.exists()) {
+      const data = userDoc.data() as UserProfile;
+      prevSubs = Array.isArray(data.solutions) ? data.solutions : [];
+    }
+    // Add new submission to the front, keep only last 3
+    const newSubs = [submission, ...prevSubs].slice(0, 3);
+    await updateDoc(userRef, { solutions: newSubs });
+    setUserProfile((prev) => prev ? { ...prev, solutions: newSubs } : prev);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -256,7 +275,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         addToHistory,
         getRecentHistory,
         shareWithGroup,
-          updateUserProfile
+        updateUserProfile,
+        addLeetCodeSubmission
       }}
     >
       {children}

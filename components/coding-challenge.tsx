@@ -39,6 +39,7 @@ interface Solution {
   memory?: string
 }
 
+// Fallback sample problems if API fails
 const sampleProblems: CodingProblem[] = [
   {
     id: "1",
@@ -172,6 +173,7 @@ interface CodingChallengeProps {
   onBack: () => void
 }
 
+
 export function CodingChallenge({ onBack }: CodingChallengeProps) {
   const [selectedProblem, setSelectedProblem] = useState<CodingProblem | null>(null)
   const [code, setCode] = useState("")
@@ -184,17 +186,44 @@ export function CodingChallenge({ onBack }: CodingChallengeProps) {
     message?: string
   } | null>(null)
   const { userProfile, updateStats, addToHistory, updateUserProfile } = useAuth()
-    const [completedProblems, setCompletedProblems] = useState<string[]>(userProfile?.completedCodingChallenges || []);
-    const [solutions, setSolutions] = useState<Solution[]>(userProfile?.solutions || []);
+  const [completedProblems, setCompletedProblems] = useState<string[]>(userProfile?.completedCodingChallenges || []);
+  const [solutions, setSolutions] = useState<Solution[]>(userProfile?.solutions || []);
+  const [problems, setProblems] = useState<CodingProblem[]>(sampleProblems);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (userProfile?.completedCodingChallenges) {
       setCompletedProblems(userProfile.completedCodingChallenges);
     }
-        if (userProfile?.solutions) {
-            setSolutions(userProfile.solutions);
-        }
+    if (userProfile?.solutions) {
+      setSolutions(userProfile.solutions);
+    }
   }, [userProfile?.completedCodingChallenges, userProfile?.solutions]);
+
+  // Fetch 5 random coding challenges from local API route (LeetCode), fallback to static if needed
+  useEffect(() => {
+    const fetchProblems = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch("/api/leetcode-daily");
+        const json = await res.json();
+        if (json.error) throw new Error(json.error);
+        if (Array.isArray(json.problems) && json.problems.length > 0) {
+          setProblems(json.problems);
+        } else {
+          setProblems(sampleProblems);
+        }
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch problems");
+        setProblems(sampleProblems);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProblems();
+  }, []);
 
   const languages = [
     { value: "javascript", label: "JavaScript" },
@@ -330,6 +359,22 @@ var twoSum = function(nums, target) {
 
   const isProblemSolved = (problemId: string) =>
     completedProblems.includes(problemId);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-lg">Loading coding challenges...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-lg text-red-600">{error}</span>
+      </div>
+    );
+  }
 
   if (selectedProblem) {
     return (
@@ -497,13 +542,13 @@ var twoSum = function(nums, target) {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="problems">Problems ({sampleProblems.length})</TabsTrigger>
+            <TabsTrigger value="problems">Problems ({problems.length})</TabsTrigger>
             <TabsTrigger value="submissions">My Submissions ({solutions.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="problems" className="space-y-4">
             <div className="grid gap-4">
-              {sampleProblems.map((problem) => {
+              {problems.map((problem) => {
                 const solved = isProblemSolved(problem.id);
                 return (
                   <Card
@@ -574,7 +619,7 @@ var twoSum = function(nums, target) {
               <div className="space-y-4">
                 {/* Show all solutions, not just accepted ones */}
                 {solutions.map((solution) => {
-                  const problem = sampleProblems.find((p) => p.id === solution.problemId)
+                  const problem = problems.find((p) => p.id === solution.problemId)
                   return (
                     <Card key={solution.id}>
                       <CardHeader>
